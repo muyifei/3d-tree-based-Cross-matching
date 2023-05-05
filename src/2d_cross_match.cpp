@@ -16,6 +16,7 @@ using namespace std;
 #define R_B 0.001388889/5
 #define DIM 2
 #define THREADNUM 4096
+#define uint unsigned int 
 
 const double h = M_PI/180.0;
 const double DIS = 9.0*(R_A*R_A+R_B*R_B);
@@ -24,6 +25,7 @@ const double eDis = (2*(1 - cos(sqrt(DIS)*h)));
 
 typedef struct node{
     double x, y;
+	uint id;
 }node;
 
 typedef struct BuildArg{
@@ -45,7 +47,7 @@ int queryThreadNum = 4096, curThreadNum = 512;
 
 
 
-inline double dist1(unsigned int a, unsigned int b) { // �� 
+inline double dist1(unsigned int a, unsigned int b) { // 
   return (s[a].x - s[b].x) * (s[a].x - s[b].x) +
          (s[a].y - s[b].y) * (s[a].y - s[b].y);
 }
@@ -93,7 +95,7 @@ void maintain(int x){
 }
 
 
-// 维度轮换
+// exchange dimensions
 
 unsigned int build(unsigned int l, unsigned int r, unsigned int sdim){
 	
@@ -257,7 +259,7 @@ double f(unsigned int b, unsigned int a){ // a is s2
 	return ret;
 }
 
-unsigned long query(unsigned int l, unsigned int r, unsigned int x){// x belong to s2, l&r belong to s
+unsigned long query(unsigned int l, unsigned int r, unsigned int x, vector<pair<uint, uint> > & retList){// x belong to s2, l&r belong to s
     // prume++;
     if (l > r) return 0;
     unsigned int mid = (l+r)/2;
@@ -267,23 +269,25 @@ unsigned long query(unsigned int l, unsigned int r, unsigned int x){// x belong 
     if (l == r) {
         //if (dist3(l, x) <= arcDis) {
         if (dist2(l, x) <= DIS) {
+			retList.push_back(pair<uint, uint>(s[l].id, s2[x].id));
 			return 1;
 		}
         return 0;
     }
 	//if (dist3(mid, x) <= arcDis){
 	if (dist2(mid, x) <= DIS) {
+		retList.push_back(pair<uint, uint>(s[mid].id, s2[x].id));
 		resultTmp += 1;
 	}
 	
     double distl = f(lc[mid], x), distr = f(rc[mid], x);
 	
     if (distl <= arcDis){
-        resultTmp += query(l, mid-1, x);
+        resultTmp += query(l, mid-1, x, retList);
     }
 
     if (distr <= arcDis){
-        resultTmp += query(mid+1, r, x);
+        resultTmp += query(mid+1, r, x, retList);
     }
 	return resultTmp;
 }
@@ -294,13 +298,20 @@ void* threadQuery(void *arg){
 	r = ((ThreadArg*)arg)->r;
 	x = ((ThreadArg*)arg)->x;
 	xMax = ((ThreadArg*)arg)->xMax;
+	vector<pair<uint, uint> > retList;
 
 	unsigned long* result = (unsigned long*)malloc(sizeof(unsigned long));
 	*result = 0;
 	
 	for (unsigned int i=x; i<=xMax; i++){
-		*result += query(l, r, i);
+		*result += query(l, r, i, retList);
 	}
+
+	// print the result if needed, or output into file
+	// for_each(retList.begin(), retList.end(), [](const auto &i){std::cout << i << " "; });
+	// ofstream out("../data/cross-match-output", ios::out);
+	// for_each(retList.begin(), retList.end(), [](const auto &i){std::out << i << " "; });
+	// out.close();
 	
 	pthread_exit(result);
 }
@@ -331,6 +342,7 @@ void* threadLoad(void* arg){
 		ra = ra*M_PI/180;
 		dec = dec*M_PI/180;
         s[i+1].x = ra, s[i+1].y = dec;
+        s[i+1].id = i+1;
 	}
 
 	pthread_exit(NULL);
@@ -441,7 +453,7 @@ int main(int argc, char* argv[]){
         return -1;
     }
 
-	// 分配空间
+	// alloc memory
 	t = time(NULL);
 	s = (struct node*)malloc((cntLimit+1) * sizeof(node));
 	s2 = (struct node*)malloc((cntLimit2+1) * sizeof(node));
@@ -459,7 +471,7 @@ int main(int argc, char* argv[]){
 	fclose(fp);
 	fclose(fp2);
 	
-	// 之后再分配空间，节约资源
+	// save resources
 	cntLimit++;
 	lc = (unsigned int*)malloc(cntLimit*sizeof(unsigned int));
 	rc = (unsigned int*)malloc(cntLimit*sizeof(unsigned int));

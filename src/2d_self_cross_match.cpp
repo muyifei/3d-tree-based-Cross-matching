@@ -93,7 +93,6 @@ void maintain(int x){
 }
 
 
-// 维度轮换
 
 unsigned int build(unsigned int l, unsigned int r, unsigned int sdim){
 	
@@ -417,7 +416,6 @@ int main(int argc, char* argv[]){
         return -1;
     }
 
-	// 分配空间
 	t = time(NULL);
 	s = (struct node*)malloc((cntLimit+1) * sizeof(node));
 	s2 = s;
@@ -432,7 +430,6 @@ int main(int argc, char* argv[]){
 
 	fclose(fp);
 	
-	// 之后再分配空间，节约资源
 	cntLimit++;
 	lc = (unsigned int*)malloc(cntLimit*sizeof(unsigned int));
 	rc = (unsigned int*)malloc(cntLimit*sizeof(unsigned int));
