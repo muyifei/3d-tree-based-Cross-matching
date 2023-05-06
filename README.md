@@ -12,3 +12,5 @@ Secondly, to compile these 4 source files to acheive 3d-cross-match, 3d-self-cro
 
 Thirdly, to run the executable file *Cross-match* with the following grammer.  
 `./Cross-match [count1 [count2 [queryThreadNumber [buildThreadNumber [catalog1 [catalog2]]]]]]`
+
+At last, the screen will output the results(or print into file), numbers and execution time.
