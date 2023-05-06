@@ -307,11 +307,12 @@ void* threadQuery(void *arg){
 		*result += query(l, r, i, retList);
 	}
 
-	// print the result if needed, or output into file
-	// for_each(retList.begin(), retList.end(), [](const auto &i){std::cout << i << "\n"; });
+	// print the result or output into file
+	// for_each(retList.begin(), retList.end(), [](const auto &i){cout<<i.first<<' '<<i.second<<endl; });
 	// ofstream out("../data/cross-match-output", ios::out);
-	// for_each(retList.begin(), retList.end(), [](const auto &i){std::out << i << "\n"; });
+	// for_each(retList.begin(), retList.end(), [](const auto &i){out<<i.first<<' '<<i.second<<endl; });
 	// out.close();
+
 	
 	pthread_exit(result);
 }
